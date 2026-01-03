@@ -109,14 +109,18 @@
                         <label for="GRUPO" class="form-label">Grupo</label>
                         <select id="GRUPO" name="GRUPO" class="form-select" required>
                             <option value="" disabled selected>-- Selecciona --</option>
-                            <option value="lactantes">Lactantes</option>
-                            <option value="maternal">Maternal</option>
-                            <option value="preescolar">Preescolar</option>
+                            <option value="" disabled selected>-- Selecciona una opción --</option>
+                            <option value="lactantes">Lactantes I - II (0 - 12 meses)</option>
+                            <option value="maternal">Maternal I (1 año 1 día – 2 años)</option>
+                            <option value="maternal2">Maternal II (2 años 1 día – 3 años)</option>
+                            <option value="preescolar1">Preescolar I (3 años 1 día – 4 años)</option>
+                            <option value="preescolar2">Preescolar II (4 años 1 día – 5 años)</option>
+                            <option value="preescolar3">Preescolar III (5 años 1 día – 6 años)</option>
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Calle y Número</label>
+                        <label class="form-label">Domicilio</label>
                         <div class="row g-2">
                             <div class="col-8">
                                 <input type="text" name="calle" class="form-control" placeholder="Calle">
@@ -316,7 +320,7 @@
                     <div class="col-md-4">
                         <label for="ESCOLARIDAD" class="form-label">Escolaridad</label>
                         <select name="escolaridad_select" id="" class="form-select" required>
-                            <option value="" disabled selected>-- Seleccione uno de los 5 CENDI --</option>
+                            <option value="" disabled selected>-- Seleccione --</option>
                             <option value="sin_escolaridad">Sin escolaridad</option>
                             <option value="preescolar">Preescolar</option>
                             <option value="primaria">Primaria</option>
