@@ -3,6 +3,34 @@
  * Equipo 4 - Tecnologías para la Web
  * Lógica del formulario de inscripción
  */
+document.addEventListener('DOMContentLoaded', () => {
+    const select = document.getElementById('lugar_select');
+    const input = document.getElementById('lugar_input');
+
+    select.addEventListener('change', () => {
+        if (select.value === 'otro') {
+            select.classList.add('d-none');
+            input.classList.remove('d-none');
+
+            select.removeAttribute('name');
+            input.setAttribute('name', 'lugar_nacimiento');
+
+            input.focus();
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        if (input.value.trim() === '') {
+            input.classList.add('d-none');
+            select.classList.remove('d-none');
+
+            input.removeAttribute('name');
+            select.setAttribute('name', 'lugar_nacimiento');
+
+            select.value = '';
+        }
+    });
+});
 
 // ========== VARIABLES GLOBALES ==========
 let formulario;
@@ -460,3 +488,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Sistema de Inscripción CENDI - Formulario inicializado');
 });
+
