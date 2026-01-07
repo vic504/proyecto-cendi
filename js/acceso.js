@@ -34,27 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Agregar botón para mostrar/ocultar contraseña
+    // Agregar botón para mostrar/ocultar contraseña (evita duplicar si ya existe)
     agregarBotonMostrarPassword();
 
     // Manejo del envío del formulario
     formulario.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const usuario = inputUsuario.value.trim();
-        const password = inputPassword.value;
-
-        // Validar todos los campos
         const usuarioValido = validarCampoUsuario(inputUsuario);
         const passwordValido = validarCampoPassword(inputPassword);
 
         if (!usuarioValido || !passwordValido) {
+            e.preventDefault();
             alert('Por favor, corrija los errores en el formulario.');
-            return;
         }
-
-        // Simular autenticación (en producción esto iría a un servidor)
-        autenticarUsuario(usuario, password);
     });
 });
 
@@ -108,10 +99,11 @@ function validarCampoPassword(campo) {
 function agregarBotonMostrarPassword() {
     const inputPassword = document.getElementById('inputPassword');
     const inputGroup = inputPassword.closest('.input-group');
+    if (!inputGroup || inputGroup.querySelector('.btn-toggle-pass')) return;
     
     // Crear botón
     const boton = document.createElement('button');
-    boton.className = 'btn btn-outline-secondary';
+    boton.className = 'btn btn-outline-secondary btn-toggle-pass';
     boton.type = 'button';
     boton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
@@ -142,51 +134,6 @@ function agregarBotonMostrarPassword() {
     });
     
     inputGroup.appendChild(boton);
-}
-
-/**
- * Simula la autenticación del usuario
- * @param {string} usuario - Usuario ingresado
- * @param {string} password - Contraseña ingresada
- */
-function autenticarUsuario(usuario, password) {
-    // Mostrar indicador de carga
-    const botonSubmit = document.querySelector('button[type="submit"]');
-    const textoOriginal = botonSubmit.innerHTML;
-    botonSubmit.disabled = true;
-    botonSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...';
-
-    // Simular llamada al servidor (setTimeout simula latencia de red)
-    setTimeout(() => {
-        botonSubmit.disabled = false;
-        botonSubmit.innerHTML = textoOriginal;
-
-        // En producción, aquí se validaría contra una base de datos
-        // Por ahora, solo simulamos el éxito
-        
-        // Guardar sesión (NO guardar contraseña en localStorage en producción real)
-        const sesion = {
-            usuario: usuario,
-            tipo: 'trabajador',
-            fechaAcceso: new Date().toISOString()
-        };
-        
-        sessionStorage.setItem('sesionCENDI', JSON.stringify(sesion));
-        
-        // Mostrar mensaje de éxito
-        alert(`¡Bienvenido!\n\nAcceso concedido para: ${usuario}\n\nSerá redirigido al panel de trabajador.`);
-        
-        // En producción, redirigir a la página correspondiente
-        // window.location.href = 'panel-trabajador.html';
-        
-        // Limpiar formulario
-        document.getElementById('formAcceso').reset();
-        
-        // Limpiar validaciones visuales
-        document.querySelectorAll('.form-control').forEach(campo => {
-            limpiarValidacion(campo);
-        });
-    }, 1500);
 }
 
 console.log('✅ Módulo de acceso para trabajadores cargado correctamente');

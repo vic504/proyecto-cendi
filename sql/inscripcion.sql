@@ -54,6 +54,7 @@ CREATE TABLE municipio (
     id_municipio INT PRIMARY KEY AUTO_INCREMENT,
     municipio VARCHAR(100) NOT NULL,
     id_entidad INT,
+    UNIQUE KEY uniq_municipio_entidad (municipio, id_entidad),
     FOREIGN KEY (id_entidad) REFERENCES entidad_federativa(id_entidad)
 );
 
@@ -91,12 +92,14 @@ CREATE TABLE nino (
     id_entidad_nac INT,
     id_cendi INT,
     id_grupo INT,
+    id_trabajador INT,
     id_domicilio INT,
     FOREIGN KEY (id_grupo_sang) REFERENCES grupo_sang(id_grupo_sang),
     FOREIGN KEY (id_rh) REFERENCES rh(id_rh),
     FOREIGN KEY (id_entidad_nac) REFERENCES entidad_federativa(id_entidad),
     FOREIGN KEY (id_cendi) REFERENCES cendi(id_cendi),
     FOREIGN KEY (id_grupo) REFERENCES grupo(id_grupo),
+    FOREIGN KEY (id_trabajador) REFERENCES trabajador(id_trabajador),
     FOREIGN KEY (id_domicilio) REFERENCES domicilio(id_domicilio)
 );
 
@@ -110,6 +113,7 @@ CREATE TABLE trabajador (
     correo_institucional VARCHAR(150),
     correo_personal VARCHAR(150),
     num_empleado VARCHAR(50),
+    password_hash VARCHAR(255) NOT NULL,
     horario_laboral VARCHAR(100),
     id_entidad_nac INT,
     id_ocupacion INT,

@@ -60,7 +60,7 @@ const regexGrupoSanguineo = /^(A|B|AB|O)[+-]$/;
 /**
  * Validación de número de empleado: alfanumérico
  */
-const regexNumeroEmpleado = /^[0-9]{4,7}$/i;
+const regexNumeroEmpleado = /^[0-9]{5,10}$/i;
 
 /**
  * Validación de domicilio: letras, números, espacios y caracteres especiales
@@ -73,9 +73,9 @@ const regexDomicilio = /^[a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s,#.-]{5,100}$/;
 const regexLugar = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s,.-]{3,50}$/;
 
 /**
- * Validación de horario: formato HH:MM a HH:MM
+ * Validación de hora: formato HH:MM de 24 horas
  */
-const regexHorario = /^([01]?\d|2[0-3]):[0-5]\d\s*a\s*([01]?\d|2[0-3]):[0-5]\d(\s*(hrs?|horas?))?$/i;
+const regexHora24 = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 // ========== FUNCIONES DE VALIDACIÓN ==========
 
@@ -279,6 +279,18 @@ function validarPassword(valor) {
     return { valido: true, mensaje: '' };
 }
 
+function validarConfirmacionPassword(pass, confirmPass) {
+    const base = validarPassword(pass);
+    if (!base.valido) return base;
+    if (!confirmPass || confirmPass.length === 0) {
+        return { valido: false, mensaje: 'Confirma la contraseña' };
+    }
+    if (pass !== confirmPass) {
+        return { valido: false, mensaje: 'La confirmación no coincide' };
+    }
+    return { valido: true, mensaje: '' };
+}
+
 /**
  * Valida código postal de 5 dígitos
  * @param {string} valor - Valor a validar
@@ -389,23 +401,39 @@ function validarNumeroEmpleado(valor) {
         return { valido: false, mensaje: 'El número de empleado es obligatorio' };
     }
     if (!regexNumeroEmpleado.test(valor.trim())) {
-        return { valido: false, mensaje: 'Debe ser alfanumérico de 5-15 caracteres' };
+        return { valido: false, mensaje: 'Debe ser numérico de 5 a 10 dígitos' };
     }
     return { valido: true, mensaje: '' };
 }
 
 /**
- * Valida horario de trabajo
- * @param {string} valor - Valor a validar
+ * Valida horario laboral con hora de entrada y salida
+ * @param {string} horaEntrada
+ * @param {string} horaSalida
  * @returns {object} - {valido: boolean, mensaje: string}
  */
-function validarHorario(valor) {
-    if (!valor || valor.trim().length === 0) {
-        return { valido: false, mensaje: 'El horario es obligatorio' };
+function validarHorasTrabajo(horaEntrada, horaSalida) {
+    if (!horaEntrada || !horaSalida) {
+        return { valido: false, mensaje: 'Debes capturar hora de entrada y salida' };
     }
-    if (!regexHorario.test(valor.trim())) {
-        return { valido: false, mensaje: 'Formato inválido. Ejemplo: 8:00 a 16:00 hrs' };
+
+    if (!regexHora24.test(horaEntrada.trim()) || !regexHora24.test(horaSalida.trim())) {
+        return { valido: false, mensaje: 'Usa formato de 24 horas HH:MM' };
     }
+
+    const [hEnt, mEnt] = horaEntrada.split(':').map(Number);
+    const [hSal, mSal] = horaSalida.split(':').map(Number);
+    const entradaMin = (hEnt * 60) + mEnt;
+    const salidaMin = (hSal * 60) + mSal;
+    const diffMin = salidaMin - entradaMin;
+
+    if (diffMin <= 0) {
+        return { valido: false, mensaje: 'La salida debe ser posterior a la entrada' };
+    }
+    if (diffMin !== 480) {
+        return { valido: false, mensaje: 'Debe haber exactamente 8 horas entre entrada y salida' };
+    }
+
     return { valido: true, mensaje: '' };
 }
 
@@ -1106,11 +1134,22 @@ $(document).ready(function () {
             case 'CPT':
                 resultado = validarCorreoGeneral(valor);
                 break;
+            case 'password':
+            case 'password_confirm':
+                resultado = validarConfirmacionPassword(
+                    document.getElementById('password')?.value || '',
+                    document.getElementById('password_confirm')?.value || ''
+                );
+                break;
             case 'NumE':
                 resultado = validarNumeroEmpleado(valor);
                 break;
-            case 'HORARIO':
-                resultado = validarHorario(valor);
+            case 'HORA_ENTRADA':
+            case 'HORA_SALIDA':
+                resultado = validarHorasTrabajo(
+                    document.getElementById('HORA_ENTRADA')?.value || '',
+                    document.getElementById('HORA_SALIDA')?.value || ''
+                );
                 break;
             case 'ESCOLARIDAD':
                 resultado = validarEscolaridad(valor);
@@ -1137,6 +1176,33 @@ $(document).ready(function () {
                 return;
         }
 
+        if (id === 'HORA_ENTRADA' || id === 'HORA_SALIDA') {
+            const entrada = document.getElementById('HORA_ENTRADA');
+            const salida = document.getElementById('HORA_SALIDA');
+
+            if (resultado.valido) {
+                mostrarValido(entrada);
+                mostrarValido(salida);
+            } else {
+                mostrarError(entrada, resultado.mensaje);
+                mostrarError(salida, resultado.mensaje);
+            }
+            return;
+        }
+
+        if (id === 'password' || id === 'password_confirm') {
+            const pass = document.getElementById('password');
+            const passConf = document.getElementById('password_confirm');
+            if (resultado.valido) {
+                mostrarValido(pass);
+                mostrarValido(passConf);
+            } else {
+                mostrarError(pass, resultado.mensaje);
+                mostrarError(passConf, resultado.mensaje);
+            }
+            return;
+        }
+
         if (resultado.valido) {
             mostrarValido(this);
         } else {
@@ -1144,83 +1210,4 @@ $(document).ready(function () {
         }
     });
 
-    // === VALIDACIÓN FINAL AL ENVIAR EL FORMULARIO ===
-    $('form').on('submit', function(e) {
-        let todoValido = true;
-
-        // Validar todos los campos obligatorios
-        const campos = [
-            'APP', 'APM', 'NOMBRES', 'LUGARNINO', 'FECHANNINO', 'CURPNINO',
-            'SANGRE', 'CONTACTONINO', 'GRUPO', 'DOMICILIONINO', 'ALCALDIANINO',
-            'enidad', 'CPNINO', 'CENDININO',
-            'APPT', 'APMT', 'NOMBREST', 'trab_lugar_nacimiento', 'FECHAT',
-            'CURPT', 'CIT', 'CPT', 'OCUPACION', 'NumE', 'ESCOLARIDAD',
-            'ADSCRIPCION', 'HORARIO'
-        ];
-
-        campos.forEach(id => {
-            const campo = document.getElementById(id);
-            if (campo) {
-                const valor = campo.value;
-                let resultado;
-
-                // Usa la misma lógica que arriba (puedes extraerla a una función si quieres)
-                switch(id) {
-                    case 'APP': case 'APM': case 'NOMBRES':
-                    case 'APPT': case 'APMT': case 'NOMBREST':
-                        resultado = validarNombre(valor); break;
-                    case 'CONTACTONINO':
-                        resultado = validarTelefono(valor); break;
-                    case 'CURPNINO': case 'CURPT':
-                        resultado = validarCURP(valor); break;
-                    case 'SANGRE':
-                        resultado = validarGrupoSanguineo(valor); break;
-                    case 'CPNINO':
-                        resultado = validarCodigoPostal(valor); break;
-                    case 'CIT':
-                        resultado = validarCorreoInstitucional(valor); break;
-                    case 'CPT':
-                        resultado = validarCorreoGeneral(valor); break;
-                    case 'NumE':
-                        resultado = validarNumeroEmpleado(valor); break;
-                    case 'HORARIO':
-                        resultado = validarHorario(valor); break;
-                    case 'ESCOLARIDAD':
-                        resultado = validarEscolaridad(valor); break;
-                    case 'GRUPO': case 'enidad': case 'CENDININO': case 'OCUPACION':
-                        resultado = validarSelect(valor); break;
-                    case 'FECHANNINO': case 'FECHAT':
-                        resultado = validarFechaNacimiento(valor); break;
-                    default:
-                        resultado = validarLugar(valor) || {valido: true};
-                }
-
-                if (!resultado.valido) {
-                    mostrarError(campo, resultado.mensaje);
-                    todoValido = false;
-                } else {
-                    mostrarValido(campo);
-                }
-            }
-        });
-
-        // Validar radio buttons de estado civil
-        const radioResult = validarRadioGroup('EC');
-        if (!radioResult.valido) {
-            todoValido = false;
-            // Puedes agregar un mensaje debajo del grupo
-            alert(radioResult.mensaje); // o mejor: crear un feedback visual
-        }
-
-        if (!todoValido) {
-            e.preventDefault();
-            alert('Por favor corrige los errores en el formulario');
-            return false;
-        }
-
-        // Si todo está bien, aquí podrías enviar con AJAX o dejar que se envíe normalmente
-        // Por ahora solo mostramos mensaje (cámbialo cuando implementes el envío real)
-        // e.preventDefault();
-        // alert('¡Formulario válido! Listo para enviar.');
-    });
 });

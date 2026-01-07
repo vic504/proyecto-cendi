@@ -1,0 +1,88 @@
+<?php
+require_once __DIR__ . '/../config.php';
+?>
+
+<!-- CONTENEDOR FIJO -->
+<div class="menu-fijo fixed-top">
+
+  <!-- s1: barra guinda -->
+  <section class="header">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-3">
+        <a href="https://www.gob.mx/segob" target="_blank"><img src="<?= asset('assets/img/logo_equipo4.png'); ?>" alt="logo_equipo4" width="60" class="ms-3"></a>
+        <a href="https://www.gob.mx/sep" target="_blank"><img src="<?= asset('assets/img/logo_blanco.svg'); ?>" alt="edu_logo" width="100"></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- s2: navbar -->
+  <nav class="navbar navbar-expand-lg bg-white">
+    <div class="container-fluid justify-content-center">
+      <div class="d-flex align-items-center gap-5">
+        <a href="https://www.ipn.mx/cocendi/" target="_blank"><img src="<?= asset('assets/img/cocendi_logo.png'); ?>" alt="logo_cendi" height="70" class="me-5"></a>
+
+        <!-- Botón hamburguesa (solo móvil) -->
+        <button class="navbar-toggler d-lg-none" type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#menuOffcanvas">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- MENÚ DESKTOP -->
+        <ul class="navbar-nav gap-5 d-none d-lg-flex">
+          <li class="nav-item"><a class="nav-link active" href="<?= page_url('index.php'); ?>">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= page_url('inscripcion.php'); ?>">Inscripción</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= page_url('acceso.php'); ?>">Acceso</a></li>
+          <li class="nav-item"><a class="nav-link" href="<?= page_url('admin.php'); ?>">Administración</a></li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+              Contacto
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="https://www.ipn.mx/directorio-telefonico.html" target="_blank">Directorio</a></li>
+              <li><a class="dropdown-item" href="https://www.ipn.mx/correo-electronico.html" target="_blank">Correo</a></li>
+              <li><a class="dropdown-item" href="https://www.ipn.mx/calendario-academico.html" target="_blank">Calendario</a></li>
+              <li><a class="dropdown-item" href="https://www.ipn.mx/transparencia/" target="_blank">Transparencia</a></li>
+              <li><a class="dropdown-item" href="https://www.ipn.mx/proteccion-datos-personales/" target="_blank">Protección de datos</a></li>
+              <li><a class="dropdown-item" href="https://www.gob.mx/" target="_blank">Trámites</a></li>
+              <li><a class="dropdown-item" href="https://www.gob.mx/gobierno" target="_blank">Gobierno</a></li>
+            </ul>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+  </nav>
+
+
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="menuOffcanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menú</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <ul class="nav flex-column gap-3">
+      <li><a class="nav-link" href="<?= page_url('index.php'); ?>">Inicio</a></li>
+      <li><a class="nav-link" href="<?= page_url('inscripcion.php'); ?>">Inscripción</a></li>
+      <li><a class="nav-link" href="<?= page_url('acceso.php'); ?>">Acceso</a></li>
+      <li><a class="nav-link" href="<?= page_url('admin.php'); ?>">Administración</a></li>
+
+      <hr>
+
+      <!-- Contacto SIN dropdown en móvil -->
+      <li><a class="nav-link" href="https://www.ipn.mx/directorio-telefonico.html" target="_blank">Directorio</a></li>
+      <li><a class="nav-link" href="https://www.ipn.mx/correo-electronico.html" target="_blank">Correo</a></li>
+      <li><a class="nav-link" href="https://www.ipn.mx/calendario-academico.html" target="_blank">Calendario</a></li>
+      <li><a class="nav-link" href="https://www.ipn.mx/transparencia/" target="_blank">Transparencia</a></li>
+      <li><a class="nav-link" href="https://www.ipn.mx/proteccion-datos-personales/" target="_blank">Protección de datos</a></li>
+      <li><a class="nav-link" href="https://www.gob.mx/" target="_blank">Trámites</a></li>
+      <li><a class="nav-link" href="https://www.gob.mx/gobierno" target="_blank">Gobierno</a></li>
+    </ul>
+  </div>
+</div>
+</div>
+<div class="b-example-divider"></div>
+<div class="b-example-divider"></div><div class="b-example-divider"></div>

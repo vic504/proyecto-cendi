@@ -119,6 +119,54 @@ function configurarValidacionTiempoReal(idCampo, funcionValidacion) {
     });
 }
 
+function configurarValidacionHorarioLaboral() {
+    const entrada = document.getElementById('HORA_ENTRADA');
+    const salida = document.getElementById('HORA_SALIDA');
+    if (!entrada || !salida) return;
+
+    const validar = () => {
+        const resultado = validarHorasTrabajo(entrada.value, salida.value);
+        if (resultado.valido) {
+            mostrarValido(entrada);
+            mostrarValido(salida);
+        } else {
+            mostrarError(entrada, resultado.mensaje);
+            mostrarError(salida, resultado.mensaje);
+        }
+    };
+
+    ['input', 'change', 'blur'].forEach(evt => {
+        entrada.addEventListener(evt, validar);
+        salida.addEventListener(evt, validar);
+    });
+
+    if (entrada.value || salida.value) {
+        validar();
+    }
+}
+
+function configurarValidacionPassword() {
+    const pass = document.getElementById('password');
+    const passConf = document.getElementById('password_confirm');
+    if (!pass || !passConf) return;
+
+    const validar = () => {
+        const resultado = validarConfirmacionPassword(pass.value, passConf.value);
+        if (resultado.valido) {
+            mostrarValido(pass);
+            mostrarValido(passConf);
+        } else {
+            mostrarError(pass, resultado.mensaje);
+            mostrarError(passConf, resultado.mensaje);
+        }
+    };
+
+    ['input', 'change', 'blur'].forEach(evt => {
+        pass.addEventListener(evt, validar);
+        passConf.addEventListener(evt, validar);
+    });
+}
+
 /**
  * Inicializa todas las validaciones en tiempo real
  */
@@ -134,6 +182,8 @@ function inicializarValidaciones() {
     configurarValidacionTiempoReal('CONTACTONINO', validarTelefono);
     configurarValidacionTiempoReal('DOMICILIONINO', validarDomicilio);
     configurarValidacionTiempoReal('CPNINO', validarCodigoPostal);
+    configurarValidacionTiempoReal('DOM_ENTIDAD', validarSelect);
+    configurarValidacionTiempoReal('DOM_MUNICIPIO', validarSelect);
     
     // Datos del Trabajador/a
     configurarValidacionTiempoReal('APPT', validarNombre);
@@ -144,10 +194,11 @@ function inicializarValidaciones() {
     configurarValidacionTiempoReal('CURPT', validarCURP);
     configurarValidacionTiempoReal('CIT', validarCorreoInstitucional);
     configurarValidacionTiempoReal('CPT', validarCorreoGeneral);
+    configurarValidacionPassword();
     configurarValidacionTiempoReal('NumE', validarNumeroEmpleado);
     configurarValidacionTiempoReal('ESCOLARIDAD', validarEscolaridad);
     configurarValidacionTiempoReal('ADSCRIPCION', validarLugar);
-    configurarValidacionTiempoReal('HORARIO', validarHorario);
+    configurarValidacionHorarioLaboral();
     
     // Bloquear caracteres inválidos en campos de nombre
     bloquearCaracteresInvalidosEnNombre(document.getElementById('APP'));
@@ -218,6 +269,9 @@ function obtenerTextoSelect(id) {
  * @returns {Object} - Objeto con todos los datos del formulario
  */
 function recopilarDatos() {
+    const horaEntrada = document.getElementById('HORA_ENTRADA')?.value || '';
+    const horaSalida = document.getElementById('HORA_SALIDA')?.value || '';
+
     const datos = {
         nino: {
             apellidoPaterno: document.getElementById('APP')?.value || '',
@@ -251,7 +305,7 @@ function recopilarDatos() {
             numeroEmpleado: document.getElementById('NumE')?.value || '',
             escolaridad: document.getElementById('ESCOLARIDAD')?.value || '',
             adscripcion: document.getElementById('ADSCRIPCION')?.value || '',
-            horario: document.getElementById('HORARIO')?.value || '',
+            horario: horaEntrada && horaSalida ? `${horaEntrada} - ${horaSalida}` : '',
             estadoCivil: obtenerValorRadio('EC')
         }
     };
@@ -279,7 +333,8 @@ function validarFormularioCompleto() {
         { id: 'CONTACTONINO', validador: validarTelefono },
         { id: 'GRUPO', validador: validarSelect },
         { id: 'DOMICILIONINO', validador: validarDomicilio },
-        { id: 'enidad', validador: validarSelect },
+        { id: 'DOM_ENTIDAD', validador: validarSelect },
+        { id: 'DOM_MUNICIPIO', validador: validarSelect },
         { id: 'CPNINO', validador: validarCodigoPostal },
         { id: 'CENDININO', validador: validarSelect },
         
@@ -292,11 +347,12 @@ function validarFormularioCompleto() {
         { id: 'CURPT', validador: validarCURP },
         { id: 'CIT', validador: validarCorreoInstitucional },
         { id: 'CPT', validador: validarCorreoGeneral },
+        { id: 'password', validador: valor => validarConfirmacionPassword(valor, document.getElementById('password_confirm')?.value || '') },
+        { id: 'password_confirm', validador: valor => validarConfirmacionPassword(document.getElementById('password')?.value || '', valor) },
         { id: 'OCUPACION', validador: validarSelect },
         { id: 'NumE', validador: validarNumeroEmpleado },
         { id: 'ESCOLARIDAD', validador: validarEscolaridad },
-        { id: 'ADSCRIPCION', validador: validarLugar },
-        { id: 'HORARIO', validador: validarHorario }
+        { id: 'ADSCRIPCION', validador: validarLugar }
     ];
 
     // Validar todos los campos
@@ -312,6 +368,34 @@ function validarFormularioCompleto() {
             }
         }
     });
+
+    const horaEntradaEl = document.getElementById('HORA_ENTRADA');
+    const horaSalidaEl = document.getElementById('HORA_SALIDA');
+    const passEl = document.getElementById('password');
+    const passConfEl = document.getElementById('password_confirm');
+    const resultadoHorario = validarHorasTrabajo(horaEntradaEl?.value || '', horaSalidaEl?.value || '');
+    if (horaEntradaEl && horaSalidaEl) {
+        if (resultadoHorario.valido) {
+            mostrarValido(horaEntradaEl);
+            mostrarValido(horaSalidaEl);
+        } else {
+            mostrarError(horaEntradaEl, resultadoHorario.mensaje);
+            mostrarError(horaSalidaEl, resultadoHorario.mensaje);
+            esValido = false;
+        }
+    }
+
+    if (passEl && passConfEl) {
+        const resultadoPass = validarConfirmacionPassword(passEl.value, passConfEl.value);
+        if (resultadoPass.valido) {
+            mostrarValido(passEl);
+            mostrarValido(passConfEl);
+        } else {
+            mostrarError(passEl, resultadoPass.mensaje);
+            mostrarError(passConfEl, resultadoPass.mensaje);
+            esValido = false;
+        }
+    }
 
     // Validar estado civil (radio buttons)
     const resultadoEC = validarRadioGroup('EC');
@@ -340,16 +424,12 @@ function validarFormularioCompleto() {
  * @param {Event} event - Evento del formulario
  */
 function manejarEnvioFormulario(event) {
-    event.preventDefault();
-    
     // Validar todos los campos
     const formularioValido = validarFormularioCompleto();
-    
+
     if (!formularioValido) {
-        // Mostrar mensaje de error general
-        alert('Por favor, corrija los errores en el formulario antes de continuar.');
-        
-        // Hacer scroll al primer campo con error
+        mostrarAviso('Por favor, corrige los errores marcados antes de continuar.', 'danger');
+        event.preventDefault();
         const primerError = document.querySelector('.is-invalid');
         if (primerError) {
             primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -357,105 +437,39 @@ function manejarEnvioFormulario(event) {
         }
         return;
     }
-    
-    // Si es válido, recopilar datos y mostrar resumen
-    const datos = recopilarDatos();
-    mostrarResumen(datos);
+
+    // Todo válido: permitir envío normal al servidor (PHP manejará confirmación)
+    limpiarAviso();
 }
 
 /**
  * Limpia todos los campos del formulario
  */
 function limpiarFormulario() {
-    if (formulario) {
-        formulario.reset();
-        
-        // Limpiar todas las validaciones visuales
-        const campos = formulario.querySelectorAll('.form-control, .form-select');
-        campos.forEach(campo => {
-            limpiarValidacion(campo);
-        });
-        
-        // Limpiar el mapa de validaciones
-        camposValidados.clear();
-        
-        // Ocultar el campo "Otro" si estaba visible
-        const otroContainer = document.getElementById('otro-container');
-        if (otroContainer) {
-            otroContainer.style.display = 'none';
-        }
-        
-        // Limpiar mensajes de error de radio buttons
-        const errorMessages = document.querySelectorAll('.text-danger.small');
-        errorMessages.forEach(msg => msg.remove());
+    if (!formulario) return;
+    formulario.reset();
+
+    const campos = formulario.querySelectorAll('.form-control, .form-select');
+    campos.forEach(campo => limpiarValidacion(campo));
+
+    camposValidados.clear();
+
+    const otroContainer = document.getElementById('otro-container');
+    if (otroContainer) {
+        otroContainer.style.display = 'none';
     }
+
+    document.querySelectorAll('.text-danger.small').forEach(msg => msg.remove());
+    limpiarAviso();
 }
 
 /**
  * Muestra el resumen de datos ingresados
  * @param {Object} datos - Datos del formulario
  */
-function mostrarResumen(datos) {
-    const { nino, trabajador } = datos;
-    
-    // Construir mensaje de resumen
-    let resumen = `Hola ${trabajador.nombres} ${trabajador.apellidoPaterno} ${trabajador.apellidoMaterno}, verifica que los datos que ingresaste sean correctos:\n\n`;
-    
-    resumen += '═══════════════════════════════════════\n';
-    resumen += '📋 DATOS DEL TRABAJADOR/A\n';
-    resumen += '═══════════════════════════════════════\n';
-    resumen += `Nombre completo: ${trabajador.nombres} ${trabajador.apellidoPaterno} ${trabajador.apellidoMaterno}\n`;
-    resumen += `CURP: ${trabajador.curp}\n`;
-    resumen += `Género: ${trabajador.genero}\n`;
-    resumen += `Fecha de nacimiento: ${trabajador.fechaNacimiento}\n`;
-    resumen += `Edad: ${trabajador.edad} años\n`;
-    resumen += `Lugar de nacimiento: ${trabajador.lugarNacimiento}\n`;
-    resumen += `Correo institucional: ${trabajador.correoInstitucional}\n`;
-    resumen += `Correo personal: ${trabajador.correoPersonal}\n`;
-    resumen += `Ocupación: ${trabajador.ocupacion}\n`;
-    resumen += `Número de empleado: ${trabajador.numeroEmpleado}\n`;
-    resumen += `Escolaridad: ${trabajador.escolaridad}\n`;
-    resumen += `Adscripción: ${trabajador.adscripcion}\n`;
-    resumen += `Horario de trabajo: ${trabajador.horario}\n`;
-    resumen += `Estado civil: ${trabajador.estadoCivil}\n\n`;
-    
-    resumen += '═══════════════════════════════════════\n';
-    resumen += '👶 DATOS DEL NIÑO/NIÑA\n';
-    resumen += '═══════════════════════════════════════\n';
-    resumen += `Nombre completo: ${nino.nombres} ${nino.apellidoPaterno} ${nino.apellidoMaterno}\n`;
-    resumen += `CURP: ${nino.curp}\n`;
-    resumen += `Fecha de nacimiento: ${nino.fechaNacimiento}\n`;
-    resumen += `Edad: ${nino.edad} años\n`;
-    resumen += `Lugar de nacimiento: ${nino.lugarNacimiento}\n`;
-    resumen += `Grupo sanguíneo: ${nino.grupoSanguineo}\n`;
-    resumen += `Teléfono de contacto: ${nino.telefono}\n`;
-    resumen += `Grupo: ${nino.grupo}\n`;
-    resumen += `Domicilio: ${nino.domicilio}\n`;
-    resumen += `Entidad federativa: ${nino.entidadFederativa}\n`;
-    resumen += `Código postal: ${nino.codigoPostal}\n`;
-    resumen += `CENDI de adscripción: ${nino.cendiAdscripcion}\n`;
-    resumen += '═══════════════════════════════════════\n\n';
-    
-    resumen += '¿Los datos son correctos?\n';
-    resumen += 'Si todo es correcto, presiona OK para continuar.\n';
-    resumen += 'Si necesitas corregir algo, presiona Cancelar.';
-    
-    // Mostrar en consola para debugging
-    console.log('Datos del formulario:', datos);
-    
-    // Mostrar resumen al usuario
-    const confirmacion = confirm(resumen);
-    
-    if (confirmacion) {
-        // Aquí se puede redirigir a página de confirmación o enviar datos
-        alert('¡Inscripción registrada exitosamente!\n\nLos datos han sido guardados correctamente.');
-        
-        // Opcional: Redirigir a página de mensaje
-        // window.location.href = 'mensaje.html';
-        
-        // O limpiar el formulario
-        limpiarFormulario();
-    }
+// Ya no se usa modal de confirmación; la confirmación se hará del lado servidor.
+function mostrarResumen() {
+    return;
 }
 
 // ========== INICIALIZACIÓN ==========
@@ -479,13 +493,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (botonLimpiar) {
             botonLimpiar.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (confirm('¿Está seguro de que desea limpiar todos los campos del formulario?')) {
-                    limpiarFormulario();
-                }
+                limpiarFormulario();
             });
         }
     }
     
     console.log('Sistema de Inscripción CENDI - Formulario inicializado');
 });
+
+function mostrarAviso(texto, tipo = 'info') {
+    if (!formulario) return;
+    let alertBox = document.getElementById('form-alert');
+    if (!alertBox) {
+        alertBox = document.createElement('div');
+        alertBox.id = 'form-alert';
+        formulario.parentElement.insertBefore(alertBox, formulario);
+    }
+    alertBox.className = `alert alert-${tipo}`;
+    alertBox.textContent = texto;
+}
+
+function limpiarAviso() {
+    const alertBox = document.getElementById('form-alert');
+    if (alertBox) alertBox.remove();
+}
 
